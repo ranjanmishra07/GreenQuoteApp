@@ -1,0 +1,69 @@
+# Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+pnpm-lock.yaml
+yarn.lock
+
+# TypeScript build output
+/dist/
+**/dist/
+/build/
+**/build/
+*.tsbuildinfo
+
+# Env files
+.env
+*.env.local
+*.env*.local
+
+# Logs
+logs
+debug.log
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors/IDEs
+.vscode/
+.idea/
+*.swp
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc
+.tmp/
+.temp/
+.cache/
+
+# Next.js
+.next/
+out/
+
+# Expo/React Native
+.expo/
+.expo-shared/
+
+# Prisma
+prisma/*.db
+
+# Docker
+*.pid
+
+# Local data
+*.sqlite
+*.db
+
+# Build artifacts
+lib/
+
+# TS incremental
+.tsbuildinfo
