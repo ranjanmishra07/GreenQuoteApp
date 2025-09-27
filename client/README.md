@@ -25,9 +25,9 @@ VITE_API_BASE_URL=http://localhost:3000/api
 ## Development
 
 ```bash
+nvm use
 # Install dependencies
 npm install
-
 # Start development server
 npm run dev
 
