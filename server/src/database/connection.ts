@@ -19,17 +19,17 @@ export class DatabaseConnection {
   }
 
   public async connect(): Promise<void> {
-    const logContext: LogContext = { 
-      service: 'DatabaseConnection', 
+    const logContext: LogContext = {
+      service: 'DatabaseConnection',
       method: 'connect',
       host: this.config.host,
       port: this.config.port,
-      database: this.config.database
+      database: this.config.database,
     };
-    
+
     try {
       logger.info('Starting database connection', logContext);
-      
+
       this.sequelize = new Sequelize({
         host: this.config.host,
         port: this.config.port,
@@ -42,14 +42,14 @@ export class DatabaseConnection {
           max: this.config.max,
           min: 0,
           acquire: this.config.connectionTimeoutMillis,
-          idle: this.config.idleTimeoutMillis
+          idle: this.config.idleTimeoutMillis,
         },
         define: {
           timestamps: true,
           underscored: true,
           createdAt: 'created_at',
-          updatedAt: 'updated_at'
-        }
+          updatedAt: 'updated_at',
+        },
       });
 
       // Test connection
@@ -59,12 +59,12 @@ export class DatabaseConnection {
       logger.info('Database connected successfully', {
         ...logContext,
         poolMax: this.config.max,
-        connectionTimeout: this.config.connectionTimeoutMillis
+        connectionTimeout: this.config.connectionTimeoutMillis,
       });
     } catch (error) {
       logError(error as Error, {
         ...logContext,
-        operation: 'database_connection'
+        operation: 'database_connection',
       });
       throw error;
     }
@@ -95,7 +95,7 @@ export class DatabaseConnection {
     if (!this.sequelize) {
       throw new Error('Database not connected. Call connect() first.');
     }
-    
+
     logger.info('Starting database synchronization', { force });
     logDatabaseOperation('SYNC', 'database', { force });
     await this.sequelize.sync({ force });
