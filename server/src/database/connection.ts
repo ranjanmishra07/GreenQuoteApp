@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 import { loadDatabaseConfig } from './config';
-import { logger } from '../logger';
+import { logger, logError, logDatabaseOperation, LogContext } from '../logger';
 
 export class DatabaseConnection {
   private static instance: DatabaseConnection;
@@ -19,7 +19,17 @@ export class DatabaseConnection {
   }
 
   public async connect(): Promise<void> {
+    const logContext: LogContext = { 
+      service: 'DatabaseConnection', 
+      method: 'connect',
+      host: this.config.host,
+      port: this.config.port,
+      database: this.config.database
+    };
+    
     try {
+      logger.info('Starting database connection', logContext);
+      
       this.sequelize = new Sequelize({
         host: this.config.host,
         port: this.config.port,
@@ -27,7 +37,7 @@ export class DatabaseConnection {
         username: this.config.username,
         password: this.config.password,
         dialect: 'postgres',
-        logging: (msg) => logger.debug(msg),
+        logging: false,
         pool: {
           max: this.config.max,
           min: 0,
@@ -43,24 +53,29 @@ export class DatabaseConnection {
       });
 
       // Test connection
+      logDatabaseOperation('CONNECT', 'database', logContext);
       await this.sequelize.authenticate();
 
       logger.info('Database connected successfully', {
-        host: this.config.host,
-        port: this.config.port,
-        database: this.config.database
+        ...logContext,
+        poolMax: this.config.max,
+        connectionTimeout: this.config.connectionTimeoutMillis
       });
     } catch (error) {
-      logger.error('Database connection failed', { error });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'database_connection'
+      });
       throw error;
     }
   }
 
   public async disconnect(): Promise<void> {
     if (this.sequelize) {
+      logger.info('Disconnecting from database');
       await this.sequelize.close();
       this.sequelize = null;
-      logger.info('Database disconnected');
+      logger.info('Database disconnected successfully');
     }
   }
 
@@ -80,8 +95,11 @@ export class DatabaseConnection {
     if (!this.sequelize) {
       throw new Error('Database not connected. Call connect() first.');
     }
+    
+    logger.info('Starting database synchronization', { force });
+    logDatabaseOperation('SYNC', 'database', { force });
     await this.sequelize.sync({ force });
-    logger.info('Database synchronized');
+    logger.info('Database synchronized successfully', { force });
   }
 }
 

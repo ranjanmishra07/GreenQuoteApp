@@ -5,6 +5,8 @@ import { Layout } from '@/components/layout/Layout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Login } from '@/pages/auth/Login';
 import { QuoteList } from '@/pages/QuoteList';
+import { AdminQuotes } from '@/pages/AdminQuotes';
+import { CreateQuote } from '@/pages/CreateQuote';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -19,8 +21,8 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
+      <Router>
+        <AuthProvider>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
@@ -34,11 +36,29 @@ function App() {
               </ProtectedRoute>
             } />
             
+            {/* Create Quote route */}
+            <Route path="/quotes/create" element={
+              <ProtectedRoute>
+                <Layout>
+                  <CreateQuote />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin routes */}
+            <Route path="/quotes/admin" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdminQuotes />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </Router>
     </QueryClientProvider>
   );
 }

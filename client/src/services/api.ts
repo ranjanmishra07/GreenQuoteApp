@@ -1,12 +1,13 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import type { AuthResponse, Quote, QuoteListResponse, LoginRequest, User } from '@/types';
+import type { AuthResponse, Quote, QuoteListResponse, QuoteListParams, LoginRequest, User, CreateQuoteRequest } from '@/types';
+import { config } from '@/config';
 
 class ApiService {
   private api: AxiosInstance;
 
   constructor() {
     this.api = axios.create({
-      baseURL: 'http://localhost:3000/api',
+      baseURL: config.apiBaseUrl,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -53,9 +54,16 @@ class ApiService {
   }
 
   // Quote endpoints
-  async getQuotes(page: number = 1, limit: number = 10): Promise<QuoteListResponse> {
+  async getQuotes(params: QuoteListParams = {}): Promise<QuoteListResponse> {
+    const { page = 1, limit = 10, view, searchName, searchEmail } = params;
+    
+    const queryParams: any = { page, limit };
+    if (view) queryParams.view = view;
+    if (searchName) queryParams.searchName = searchName;
+    if (searchEmail) queryParams.searchEmail = searchEmail;
+    
     const response: AxiosResponse<QuoteListResponse> = await this.api.get('/quotes', {
-      params: { page, limit },
+      params: queryParams,
     });
     return response.data;
   }
@@ -65,7 +73,10 @@ class ApiService {
     return response.data;
   }
 
-
+  async createQuote(quoteData: CreateQuoteRequest): Promise<Quote> {
+    const response: AxiosResponse<Quote> = await this.api.post('/quotes', quoteData);
+    return response.data;
+  }
 
   // Health check
   async healthCheck(): Promise<{ status: string }> {

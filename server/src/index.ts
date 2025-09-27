@@ -2,7 +2,7 @@ import * as express from 'express';
 import { Express } from 'express';
 import * as cors from 'cors';
 import { loadConfig } from './config';
-import { logger } from './logger';
+import { logger, requestLogger, logError } from './logger';
 import { createHealthRouter } from './modules/health/router';
 import { createUserRouter } from './modules/user/index';
 import { createQuoteRouter } from './modules/quotes/index';
@@ -14,12 +14,32 @@ let server: import('http').Server | null = null;
 
 export function composeApp(): Express {
   const instance = express();
+  
+  // Add request logging middleware first
+  instance.use(requestLogger);
+  
   instance.use(cors());
   instance.use(express.json());
 
   instance.use('/api/health', createHealthRouter());
   instance.use('/api/users', createUserRouter());
   instance.use('/api/quotes', createQuoteRouter());
+
+  // Global error handler
+  instance.use((error: Error, req: any, res: any, next: any) => {
+    logError(error, {
+      requestId: req.requestId,
+      method: req.method,
+      url: req.url,
+      userId: req.user?.userId
+    });
+    
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      requestId: req.requestId
+    });
+  });
 
   return instance;
 }
@@ -52,7 +72,7 @@ export async function start() {
       logger.info('  GET  /api/health - Health check');
     });
   } catch (error) {
-    logger.error('Failed to start application', { error });
+    logError(error as Error, { context: 'application_startup' });
     process.exit(1);
   }
 

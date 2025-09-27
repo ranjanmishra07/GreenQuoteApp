@@ -27,6 +27,7 @@ export interface UserResponse {
   id: string; // Changed to string for epoch-based ID
   fullName: string;
   email: string;
+  roleName: string;
   address?: string;
   createdAt: Date;
   updatedAt: Date;

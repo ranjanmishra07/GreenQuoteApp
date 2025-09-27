@@ -7,35 +7,58 @@ import {
   JwtPayload 
 } from '../dto/api/user.dto';
 import { generateToken } from '../middleware/jwt';
-import { logger } from '../../../logger';
+import { logger, logError, LogContext } from '../../../logger';
 
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   async register(data: CreateUserRequest): Promise<UserResponse> {
+    const logContext: LogContext = { 
+      service: 'UserService', 
+      method: 'register',
+      email: data.email 
+    };
+    
     try {
       const user = await this.userRepository.create(data);
+      
+      logger.info('User registered successfully', {
+        ...logContext,
+        userId: user.id,
+        roleName: user.roleName
+      });
       
       // Return user without sensitive data
       return {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
+        roleName: user.roleName,
         address: user.address,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       };
     } catch (error) {
-      logger.error('User registration failed', { error, email: data.email });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'user_registration'
+      });
       throw error;
     }
   }
 
   async login(data: LoginRequest): Promise<AuthResponse> {
+    const logContext: LogContext = { 
+      service: 'UserService', 
+      method: 'login',
+      email: data.email 
+    };
+    
     try {
       const user = await this.userRepository.findByEmail(data.email);
       
       if (!user) {
+        logger.warn('Login failed - user not found', logContext);
         throw new Error('Invalid email or password');
       }
 
@@ -45,27 +68,38 @@ export class UserService {
       );
 
       if (!isValidPassword) {
+        logger.warn('Login failed - invalid password', {
+          ...logContext,
+          userId: user.id
+        });
         throw new Error('Invalid email or password');
       }
 
       // Update last login
       await this.userRepository.updateLastLogin(user.id);
 
-          // Generate JWT token
-          const tokenPayload: Omit<JwtPayload, 'iat' | 'exp'> = {
-            userId: user.id,
-            fullName: user.fullName,
-            email: user.email,
-            address: user.address,
-            roleName: user.roleName
-          };
+      // Generate JWT token
+      const tokenPayload: Omit<JwtPayload, 'iat' | 'exp'> = {
+        userId: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        address: user.address,
+        roleName: user.roleName
+      };
       const token = generateToken(tokenPayload);
+
+      logger.info('User login successful', {
+        ...logContext,
+        userId: user.id,
+        roleName: user.roleName
+      });
 
       // Return user without sensitive data
       const userResponse: UserResponse = {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
+        roleName: user.roleName,
         address: user.address,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -76,16 +110,26 @@ export class UserService {
         token
       };
     } catch (error) {
-      logger.error('User login failed', { error, email: data.email });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'user_login'
+      });
       throw error;
     }
   }
 
   async getUserById(id: string): Promise<UserResponse | null> {
+    const logContext: LogContext = { 
+      service: 'UserService', 
+      method: 'getUserById',
+      userId: id 
+    };
+    
     try {
       const user = await this.userRepository.findById(id);
       
       if (!user) {
+        logger.warn('User not found', logContext);
         return null;
       }
 
@@ -93,12 +137,16 @@ export class UserService {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
+        roleName: user.roleName,
         address: user.address,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       };
     } catch (error) {
-      logger.error('Get user by ID failed', { error, userId: id });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'get_user_by_id'
+      });
       throw error;
     }
   }

@@ -18,7 +18,7 @@ async function removeUsers() {
     
     // Initialize models
     const { initModels } = require('../src/database/models');
-    await initModels();
+    await initModels(db.getSequelize());
     console.log('✅ Models initialized');
     
     // Import User model after connection is established
@@ -27,16 +27,16 @@ async function removeUsers() {
     // List of test user emails to remove
     const testUserEmails = [
       'admin@greenquote.com',
-      'john.smith@example.com',
-      'sarah.johnson@example.com',
-      'michael.brown@example.com',
-      'emily.davis@example.com',
-      'david.wilson@example.com',
-      'lisa.anderson@example.com',
-      'robert.taylor@example.com',
-      'jennifer.martinez@example.com',
-      'christopher.garcia@example.com',
-      'amanda.rodriguez@example.com'
+      'testuser1@gmail.com',
+      'testuser2@gmail.com',
+      'testuser3@gmail.com',
+      'testuser4@gmail.com',
+      'testuser5@gmail.com',
+      'testuser6@gmail.com',
+      'testuser7@gmail.com',
+      'testuser8@gmail.com',
+      'testuser9@gmail.com',
+      'testuser10@gmail.com'
     ];
     
     console.log('🗑️  Removing test users...');

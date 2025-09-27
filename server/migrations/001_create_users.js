@@ -21,7 +21,7 @@ async function createUsers() {
     
     // Initialize models
     const { initModels } = require('../src/database/models');
-    await initModels();
+    await initModels(db.getSequelize());
     console.log('✅ Models initialized');
     
     // Import User model after connection is established
@@ -45,16 +45,16 @@ async function createUsers() {
     
     // Create 10 regular users
     const regularUsers = [
-      { name: 'John Smith', email: 'john.smith@example.com', address: '123 Main St, New York, NY 10001' },
-      { name: 'Sarah Johnson', email: 'sarah.johnson@example.com', address: '456 Oak Ave, Los Angeles, CA 90210' },
-      { name: 'Michael Brown', email: 'michael.brown@example.com', address: '789 Pine Rd, Chicago, IL 60601' },
-      { name: 'Emily Davis', email: 'emily.davis@example.com', address: '321 Elm St, Houston, TX 77001' },
-      { name: 'David Wilson', email: 'david.wilson@example.com', address: '654 Maple Dr, Phoenix, AZ 85001' },
-      { name: 'Lisa Anderson', email: 'lisa.anderson@example.com', address: '987 Cedar Ln, Philadelphia, PA 19101' },
-      { name: 'Robert Taylor', email: 'robert.taylor@example.com', address: '147 Birch St, San Antonio, TX 78201' },
-      { name: 'Jennifer Martinez', email: 'jennifer.martinez@example.com', address: '258 Spruce Ave, San Diego, CA 92101' },
-      { name: 'Christopher Garcia', email: 'christopher.garcia@example.com', address: '369 Willow Rd, Dallas, TX 75201' },
-      { name: 'Amanda Rodriguez', email: 'amanda.rodriguez@example.com', address: '741 Poplar St, San Jose, CA 95101' }
+      { name: 'Test User1', email: 'testuser1@gmail.com', address: '123 Main St, New York, NY 10001' },
+      { name: 'Test User2', email: 'testuser2@gmail.com', address: '456 Oak Ave, Los Angeles, CA 90210' },
+      { name: 'Test User3', email: 'testuser3@gmail.com', address: '789 Pine Rd, Chicago, IL 60601' },
+      { name: 'Test User4', email: 'testuser4@gmail.com', address: '321 Elm St, Houston, TX 77001' },
+      { name: 'Test User5', email: 'testuser5@gmail.com', address: '654 Maple Dr, Phoenix, AZ 85001' },
+      { name: 'Test User6', email: 'testuser6@gmail.com', address: '987 Cedar Ln, Philadelphia, PA 19101' },
+      { name: 'Test User7', email: 'testuser7@gmail.com', address: '147 Birch St, San Antonio, TX 78201' },
+      { name: 'Test User8', email: 'testuser8@gmail.com', address: '258 Spruce Ave, San Diego, CA 92101' },
+      { name: 'Test User9', email: 'testuser9@gmail.com', address: '369 Willow Rd, Dallas, TX 75201' },
+      { name: 'Test User10', email: 'testuser10@gmail.com', address: '741 Poplar St, San Jose, CA 95101' }
     ];
     
     const defaultPassword = 'user123';

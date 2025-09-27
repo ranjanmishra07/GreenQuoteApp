@@ -7,17 +7,22 @@ import {
   LoginResponse,
   ErrorResponse 
 } from '../dto/api/user.dto';
-import { logger } from '../../../logger';
+import { logger, logError, logAuthEvent, LogContext } from '../../../logger';
 
 export class UserController {
   constructor(private userService: UserService) {}
 
   async register(req: Request, res: Response): Promise<void> {
+    const requestId = (req as any).requestId;
+    const logContext: LogContext = { requestId, method: 'register' };
+    
     try {
       const userData: CreateUserRequest = req.body;
       
+      
       // Basic validation
       if (!userData.fullName || !userData.email || !userData.password) {
+        logger.warn('Registration validation failed - missing required fields', logContext);
         const errorResponse: ErrorResponse = {
           success: false,
           message: 'Full name, email, and password are required'
@@ -29,6 +34,10 @@ export class UserController {
       // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(userData.email)) {
+        logger.warn('Registration validation failed - invalid email format', {
+          ...logContext,
+          email: userData.email
+        });
         const errorResponse: ErrorResponse = {
           success: false,
           message: 'Invalid email format'
@@ -39,6 +48,7 @@ export class UserController {
 
       // Password validation
       if (userData.password.length < 6) {
+        logger.warn('Registration validation failed - password too short', logContext);
         const errorResponse: ErrorResponse = {
           success: false,
           message: 'Password must be at least 6 characters long'
@@ -49,6 +59,12 @@ export class UserController {
 
       const user = await this.userService.register(userData);
       
+      logAuthEvent('user_registered', {
+        ...logContext,
+        userId: user.id,
+        email: user.email
+      });
+      
       const response: RegisterResponse = {
         success: true,
         data: user,
@@ -57,7 +73,11 @@ export class UserController {
       
       res.status(201).json(response);
     } catch (error) {
-      logger.error('User registration failed in controller', { error, body: req.body });
+      logError(error as Error, {
+        ...logContext,
+        email: req.body.email,
+        operation: 'user_registration'
+      });
       
       const errorResponse: ErrorResponse = {
         success: false,
@@ -69,11 +89,16 @@ export class UserController {
   }
 
   async login(req: Request, res: Response): Promise<void> {
+    const requestId = (req as any).requestId;
+    const logContext: LogContext = { requestId, method: 'login' };
+    
     try {
       const loginData: LoginRequest = req.body;
       
+      
       // Basic validation
       if (!loginData.email || !loginData.password) {
+        logger.warn('Login validation failed - missing credentials', logContext);
         const errorResponse: ErrorResponse = {
           success: false,
           message: 'Email and password are required'
@@ -84,6 +109,13 @@ export class UserController {
 
       const authResponse = await this.userService.login(loginData);
       
+      logAuthEvent('user_login_success', {
+        ...logContext,
+        userId: authResponse.user.id,
+        email: authResponse.user.email,
+        roleName: authResponse.user.roleName
+      });
+      
       const response: LoginResponse = {
         success: true,
         data: authResponse,
@@ -92,7 +124,17 @@ export class UserController {
       
       res.status(200).json(response);
     } catch (error) {
-      logger.error('User login failed in controller', { error, email: req.body.email });
+      logAuthEvent('user_login_failed', {
+        ...logContext,
+        email: req.body.email,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      logError(error as Error, {
+        ...logContext,
+        email: req.body.email,
+        operation: 'user_login'
+      });
       
       const errorResponse: ErrorResponse = {
         success: false,
@@ -104,10 +146,14 @@ export class UserController {
   }
 
   async getProfile(req: Request, res: Response): Promise<void> {
+    const requestId = (req as any).requestId;
+    const userId = req.user?.userId;
+    const logContext: LogContext = { requestId, method: 'getProfile', userId };
+    
     try {
-      const userId = req.user?.userId;
       
       if (!userId) {
+        logger.warn('Get profile failed - user not authenticated', logContext);
         const errorResponse: ErrorResponse = {
           success: false,
           message: 'User not authenticated'
@@ -119,6 +165,7 @@ export class UserController {
       const user = await this.userService.getUserById(userId);
       
       if (!user) {
+        logger.warn('Get profile failed - user not found', logContext);
         const errorResponse: ErrorResponse = {
           success: false,
           message: 'User not found'
@@ -127,12 +174,16 @@ export class UserController {
         return;
       }
 
+
       res.status(200).json({
         success: true,
         data: user
       });
     } catch (error) {
-      logger.error('Get profile failed in controller', { error, userId: req.user?.userId });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'get_profile'
+      });
       
       const errorResponse: ErrorResponse = {
         success: false,

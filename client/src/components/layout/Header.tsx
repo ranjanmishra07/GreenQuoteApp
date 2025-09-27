@@ -5,6 +5,10 @@ import { LogOut, User, Sun } from 'lucide-react';
 export const Header: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
 
+  // Debug: Log user data
+  console.log('Header - User data:', user);
+  console.log('Header - Is authenticated:', isAuthenticated);
+
   const handleLogout = () => {
     logout();
   };
@@ -19,30 +23,35 @@ export const Header: React.FC = () => {
             <span className="text-xl font-bold text-gray-900">GreenQuote</span>
           </div>
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <User className="h-5 w-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">
-                    {user?.fullName || 'User'}
-                  </span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-1 text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-600">
-                Please login to view quotes
-              </div>
-            )}
-          </div>
+                  {/* User Menu */}
+                  <div className="flex items-center space-x-4">
+                    {isAuthenticated ? (
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <User className="h-5 w-5 text-gray-500" />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-900">
+                              {user?.fullName || 'Loading...'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {user?.email || 'Loading...'}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-1 text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        Please login to view quotes
+                      </div>
+                    )}
+                  </div>
         </div>
       </div>
     </header>

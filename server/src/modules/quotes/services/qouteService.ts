@@ -6,25 +6,71 @@ import {
   QuoteWithAuthorResponse 
 } from '../dto/api/quote.dto';
 import { PricingService } from './pricingService';
-import { logger } from '../../../logger';
+import { logger, logError, LogContext } from '../../../logger';
 import { RolesEnum } from '../../user/dto/types';
+import { Op } from 'sequelize';
+
+export interface GetAllQuotesParams {
+  userId: string;
+  page?: number;
+  limit?: number;
+  roleName?: string;
+  searchName?: string;
+  searchEmail?: string;
+  view?: string;
+}
 
 export class QuoteService {
-  async getAllQuotes(userId: string, page: number = 1, limit: number = 10, roleName?: string): Promise<{ quotes: QuoteResponse[], totalCount: number, totalPages: number, currentPage: number }> {
+  async getAllQuotes(params: GetAllQuotesParams): Promise<{ quotes: QuoteResponse[], totalCount: number, totalPages: number, currentPage: number }> {
+    const logContext: LogContext = { 
+      service: 'QuoteService', 
+      method: 'getAllQuotes',
+      userId: params.userId,
+      page: params.page,
+      limit: params.limit
+    };
+    
     try {
+      const { userId, page = 1, limit = 10, roleName, searchName, searchEmail, view } = params;
       const offset = (page - 1) * limit;
       
-      // If user is ADMIN, don't filter by userId (show all quotes)
+      
+      // Determine if admin view is enabled
+      const isAdminView = roleName === RolesEnum.ADMIN && view === 'ADMIN';
+      
+      // If admin view is enabled, don't filter by userId (show all quotes)
       // Otherwise, filter by userId (show only user's quotes)
-      const whereClause = roleName === RolesEnum.ADMIN ? {} : { userId };
+      const whereClause = isAdminView ? {} : { userId };
+      
+      // Build include clause with search filters for admin users
+      const includeClause: any = {
+        model: User,
+        as: 'author',
+        attributes: ['id', 'fullName', 'email', 'address']
+      };
+      
+      // Add search filters for admin users only when admin view is enabled
+      if (isAdminView && (searchName || searchEmail)) {
+        const authorWhere: any = {};
+        
+        if (searchName) {
+          authorWhere.fullName = {
+            [Op.iLike]: `%${searchName}%`
+          };
+        }
+        
+        if (searchEmail) {
+          authorWhere.email = {
+            [Op.iLike]: `%${searchEmail}%`
+          };
+        }
+        
+        includeClause.where = authorWhere;
+      }
       
       const { count, rows: quotes } = await Quote.findAndCountAll({
         where: whereClause,
-        include: [{
-          model: User,
-          as: 'author',
-          attributes: ['id', 'fullName', 'email', 'address']
-        }],
+        include: [includeClause],
         limit,
         offset,
         order: [['createdAt', 'DESC']]
@@ -56,12 +102,22 @@ export class QuoteService {
         currentPage: page
       };
     } catch (error) {
-      logger.error('Error fetching all quotes', { error });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'get_all_quotes'
+      });
       throw error;
     }
   }
 
   async getQuoteById(id: string, userId: string): Promise<QuoteWithAuthorResponse | null> {
+    const logContext: LogContext = { 
+      service: 'QuoteService', 
+      method: 'getQuoteById',
+      quoteId: id,
+      userId 
+    };
+    
     try {
       const quote = await Quote.findOne({
         where: { id, userId },
@@ -73,6 +129,7 @@ export class QuoteService {
       });
       
       if (!quote) {
+        logger.warn('Quote not found', logContext);
         return null;
       }
 
@@ -100,18 +157,32 @@ export class QuoteService {
         updatedAt: quote.updatedAt
       };
     } catch (error) {
-      logger.error('Error fetching quote by ID', { error, quoteId: id });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'get_quote_by_id'
+      });
       throw error;
     }
   }
 
   async createQuote(data: CreateQuoteRequest & { userId: string }): Promise<QuoteResponse> {
+    const logContext: LogContext = { 
+      service: 'QuoteService', 
+      method: 'createQuote',
+      userId: data.userId,
+      systemSizeKw: data.systemSizeKw,
+      monthlyConsumptionKwh: data.monthlyConsumptionKwh
+    };
+    
     try {
+      // Set default downPayment to 0 if not provided
+      const downPayment = data.downPayment ?? 0;
+      
       // Calculate pricing using the pricing service
       const pricing = PricingService.calculateQuotePricing(
         data.systemSizeKw,
         data.monthlyConsumptionKwh,
-        data.downPayment,
+        downPayment,
         data.currency || 'USD'
       );
 
@@ -119,7 +190,7 @@ export class QuoteService {
         userId: data.userId,
         systemSizeKw: data.systemSizeKw,
         monthlyConsumptionKwh: data.monthlyConsumptionKwh,
-        downPayment: data.downPayment,
+        downPayment: downPayment,
         currency: data.currency || 'USD',
         systemPrice: pricing.systemPrice,
         principalAmount: pricing.principalAmount,
@@ -131,8 +202,17 @@ export class QuoteService {
       // Get user details for response
       const user = await User.findByPk(data.userId);
       if (!user) {
+        logger.error('User not found during quote creation', logContext);
         throw new Error('User not found');
       }
+
+      logger.info('Quote created successfully', {
+        ...logContext,
+        quoteId: quote.id,
+        systemPrice: quote.systemPrice,
+        riskBand: quote.riskBand,
+        userEmail: user.email
+      });
 
       return {
         id: quote.id,
@@ -153,7 +233,11 @@ export class QuoteService {
         updatedAt: quote.updatedAt
       };
     } catch (error) {
-      logger.error('Error creating quote', { error, data });
+      logError(error as Error, {
+        ...logContext,
+        operation: 'create_quote',
+        quoteData: data
+      });
       throw error;
     }
   }

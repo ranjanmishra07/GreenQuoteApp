@@ -2,7 +2,7 @@
 export interface CreateQuoteRequest {
   systemSizeKw: number;
   monthlyConsumptionKwh: number;
-  downPayment: number;
+  downPayment?: number; // Optional, defaults to 0
   currency?: string; // Default to USD
 }
 

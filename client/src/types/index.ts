@@ -53,6 +53,21 @@ export interface QuoteListResponse {
   currentPage: number;
 }
 
+export interface QuoteListParams {
+  page?: number;
+  limit?: number;
+  view?: 'ADMIN';
+  searchName?: string;
+  searchEmail?: string;
+}
+
+export interface CreateQuoteRequest {
+  systemSizeKw: number;
+  monthlyConsumptionKwh: number;
+  downPayment?: number; // Optional, defaults to 0
+  currency?: string;
+}
+
 // Auth types
 export interface LoginRequest {
   email: string;

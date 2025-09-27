@@ -1,6 +1,9 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from 'react';
 import type { AuthUser, User } from '@/types';
 import { apiService } from '@/services/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -29,6 +32,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -44,6 +49,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           .catch(() => {
             localStorage.removeItem('token');
             setAuthUser(null);
+            setUser(null);
+            navigate('/login');
           })
           .finally(() => setIsLoading(false));
       } catch (error) {
@@ -81,6 +88,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     localStorage.removeItem('token');
     setUser(null);
     setAuthUser(null);
+    queryClient.clear(); // Clear all queries from the cache
+    toast.success('Logged out successfully!');
+    navigate('/login');
   };
 
   const value: AuthContextType = {

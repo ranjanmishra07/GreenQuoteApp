@@ -29,7 +29,7 @@ describe('QuoteService Integration Tests', () => {
     quoteService = new quoteServiceModule.QuoteService()
 
     // Initialize models with associations
-    await modelsModule.initModels()
+    await modelsModule.initModels(testSequelize)
 
     // Reset database to ensure clean state
     await resetTestDB(true)
@@ -139,7 +139,11 @@ describe('QuoteService Integration Tests', () => {
   // Tests for getAllQuotes function
   describe('getAllQuotes', () => {
     it('should return quotes for regular user (filtered by userId)', async () => {
-      const result = await quoteService.getAllQuotes(testUser.id, 1, 10)
+      const result = await quoteService.getAllQuotes({
+        userId: testUser.id,
+        page: 1,
+        limit: 10
+      })
       
       expect(result).to.exist
       expect(result.quotes).to.be.an('array')
@@ -169,7 +173,11 @@ describe('QuoteService Integration Tests', () => {
         address: '456 Another Street'
       })
 
-      const result = await quoteService.getAllQuotes(anotherUser.id, 1, 10)
+      const result = await quoteService.getAllQuotes({
+        userId: anotherUser.id,
+        page: 1,
+        limit: 10
+      })
       
       expect(result).to.exist
       expect(result.quotes).to.be.an('array')
@@ -193,11 +201,65 @@ describe('QuoteService Integration Tests', () => {
         address: '789 Admin Street'
       })
 
-      const result = await quoteService.getAllQuotes(adminUser.id, 1, 10, RolesEnum.ADMIN)
+      const result = await quoteService.getAllQuotes({
+        userId: adminUser.id,
+        page: 1,
+        limit: 10,
+        roleName: RolesEnum.ADMIN,
+        view: 'ADMIN'
+      })
       
       expect(result).to.exist
       expect(result.quotes).to.be.an('array')
       expect(result.quotes).to.have.lengthOf(1) // Should see the test quote
+      expect(result.totalCount).to.equal(1)
+      expect(result.totalPages).to.equal(1)
+      expect(result.currentPage).to.equal(1)
+    })
+
+    it('should return only admin user quotes when view=ADMIN is not set', async () => {
+      // Create admin user
+      const salt = await bcrypt.genSalt(10)
+      const passwordHash = await bcrypt.hash('password123', salt)
+      
+      const adminUser = await User.create({
+        fullName: 'Admin User',
+        email: 'admin7@example.com',
+        passwordHash,
+        salt,
+        roleName: RolesEnum.ADMIN,
+        address: '789 Admin Street'
+      })
+
+      // Create a quote for the admin user
+      await Quote.create({
+        userId: adminUser.id,
+        systemSizeKw: 12,
+        monthlyConsumptionKwh: 800,
+        downPayment: 2000,
+        currency: 'USD',
+        systemPrice: 14400,
+        principalAmount: 12400,
+        riskBand: 'A',
+        baseApr: 6.9,
+        offers: [
+          { termYears: 5, apr: 6.9, principalUsed: 12400, monthlyPayment: 245.2 }
+        ]
+      })
+
+      // Get quotes without view=ADMIN parameter
+      const result = await quoteService.getAllQuotes({
+        userId: adminUser.id,
+        page: 1,
+        limit: 10,
+        roleName: RolesEnum.ADMIN
+        // view parameter not set
+      })
+      
+      expect(result).to.exist
+      expect(result.quotes).to.be.an('array')
+      expect(result.quotes).to.have.lengthOf(1) // Should only see admin's own quote
+      expect(result.quotes[0].userId).to.equal(adminUser.id)
       expect(result.totalCount).to.equal(1)
       expect(result.totalPages).to.equal(1)
       expect(result.currentPage).to.equal(1)
@@ -220,7 +282,11 @@ describe('QuoteService Integration Tests', () => {
         ]
       })
 
-      const result = await quoteService.getAllQuotes(testUser.id, 1, 1)
+      const result = await quoteService.getAllQuotes({
+        userId: testUser.id,
+        page: 1,
+        limit: 1
+      })
       
       expect(result).to.exist
       expect(result.quotes).to.be.an('array')
@@ -229,6 +295,7 @@ describe('QuoteService Integration Tests', () => {
       expect(result.totalPages).to.equal(2)
       expect(result.currentPage).to.equal(1)
     })
+
   })
 
   // Tests for createQuote function
