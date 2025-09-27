@@ -1,16 +1,9 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { RolesEnum } from '../../modules/user/dto/types';
 
-// Function to generate epoch-based ID with 4-character random string
-function generateEpochId(): string {
-  const epochTime = Math.floor(Date.now()); // Current epoch time in milliseconds
-  const randomString = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4-character random string
-  return `${epochTime}${randomString}`;
-}
-
 // Internal data model attributes
 export interface UserAttributes {
-  id: string; // Changed to string for epoch-based ID
+  id: string; // UUID string
   fullName: string;
   roleName: string;
   email: string;
@@ -41,9 +34,9 @@ export function initUserModel(sequelize: Sequelize): void {
   User.init(
     {
       id: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         primaryKey: true,
-        defaultValue: generateEpochId, // Call TypeScript function
+        defaultValue: DataTypes.UUIDV4,
         allowNull: false
       },
       fullName: {

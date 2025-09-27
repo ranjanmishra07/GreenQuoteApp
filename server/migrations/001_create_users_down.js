@@ -21,8 +21,8 @@ async function removeUsers() {
     await initModels(db.getSequelize());
     console.log('✅ Models initialized');
     
-    // Import User model after connection is established
-    const { User } = require('../src/database/models');
+    // Import models after connection is established
+    const { User, Quote } = require('../src/database/models');
     
     // List of test user emails to remove
     const testUserEmails = [
@@ -39,7 +39,15 @@ async function removeUsers() {
       'testuser10@gmail.com'
     ];
     
-    console.log('🗑️  Removing test users...');
+    console.log('🗑️  Removing test quotes and users...');
+    
+    // First, remove all quotes (they will be automatically removed when users are deleted due to CASCADE)
+    // But let's be explicit about it
+    const quoteCount = await Quote.count();
+    if (quoteCount > 0) {
+      await Quote.destroy({ where: {} });
+      console.log(`🗑️  Removed ${quoteCount} quotes`);
+    }
     
     let removedCount = 0;
     
@@ -58,6 +66,7 @@ async function removeUsers() {
     
     console.log(`\n🎉 Migration down completed successfully!`);
     console.log(`📊 Removed ${removedCount} users out of ${testUserEmails.length} attempted`);
+    console.log(`📊 Removed ${quoteCount} quotes`);
     
     if (removedCount === 0) {
       console.log('💡 No test users were found to remove. They may have already been deleted.');

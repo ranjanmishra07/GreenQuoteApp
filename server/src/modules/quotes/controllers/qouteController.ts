@@ -212,7 +212,7 @@ export class QuoteController {
         operation: 'create_quote',
         quoteData: req.body
       });
-      res.status(400).json({ error: 'Failed to create quote' });
+      res.status(500).json({ error: 'Failed to create quote' });
     }
   }
 
