@@ -1,8 +1,5 @@
-import { DataTypes, Model, Optional } from 'sequelize';
-import { getSequelize } from '../connection';
+import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import { RolesEnum } from '../../modules/user/dto/types';
-
-const sequelize = getSequelize();
 
 // Function to generate epoch-based ID with 4-character random string
 function generateEpochId(): string {
@@ -39,51 +36,54 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public readonly updatedAt!: Date;
 }
 
-User.init(
-  {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
-      defaultValue: generateEpochId, // Call TypeScript function
-      allowNull: false
-    },
-    fullName: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      field: 'full_name'
-    },
-    roleName: {
-      type: DataTypes.STRING(255),
-      defaultValue: RolesEnum.USER,
-      allowNull: false,
-      field: 'role_name'
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true
+// Function to initialize the User model with a Sequelize instance
+export function initUserModel(sequelize: Sequelize): void {
+  User.init(
+    {
+      id: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+        defaultValue: generateEpochId, // Call TypeScript function
+        allowNull: false
+      },
+      fullName: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        field: 'full_name'
+      },
+      roleName: {
+        type: DataTypes.STRING(255),
+        defaultValue: RolesEnum.USER,
+        allowNull: false,
+        field: 'role_name'
+      },
+      email: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        unique: true,
+        validate: {
+          isEmail: true
+        }
+      },
+      address: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      passwordHash: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        field: 'password_hash'
+      },
+      salt: {
+        type: DataTypes.STRING(255),
+        allowNull: false
       }
     },
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    passwordHash: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      field: 'password_hash'
-    },
-    salt: {
-      type: DataTypes.STRING(255),
-      allowNull: false
+    {
+      sequelize,
+      tableName: 'users',
+      timestamps: true,
+      underscored: true
     }
-  },
-  {
-    sequelize,
-    tableName: 'users',
-    timestamps: true,
-    underscored: true
-  }
-);
+  );
+}

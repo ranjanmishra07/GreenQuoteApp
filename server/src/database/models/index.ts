@@ -1,10 +1,7 @@
-import { getSequelize } from "../connection";
+import { Sequelize } from "sequelize";
 import { logger } from "../../logger";
-import { User } from "./user.model";
-import { Quote } from "./quote.model";
-
-// Initialize sequelize connection for models
-getSequelize();
+import { User, initUserModel } from "./user.model";
+import { Quote, initQuoteModel } from "./quote.model";
 
 // Define associations
 export function initAssociations() {
@@ -26,9 +23,13 @@ export function initAssociations() {
 }
 
 // Initialize all models and associations
-export async function initModels() {
+export async function initModels(sequelize: Sequelize) {
   try {
-    // Initialize associations first
+    // Initialize models with the sequelize instance
+    initUserModel(sequelize);
+    initQuoteModel(sequelize);
+    
+    // Initialize associations after models are initialized
     initAssociations();
     
     // Sync all models with database

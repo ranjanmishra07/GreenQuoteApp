@@ -33,7 +33,7 @@ export async function start() {
     await db.connect();
     
     // Initialize models and associations
-    await initModels();
+    await initModels(db.getSequelize());
     
     // Start Express server
     app = composeApp();

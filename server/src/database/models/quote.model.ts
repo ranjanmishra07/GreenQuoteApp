@@ -1,15 +1,4 @@
-import { DataTypes, Model, Optional } from "sequelize";
-import { getSequelize } from "../connection";
-
-const sequelize = getSequelize();
-
-// Function to generate epoch-based ID with 4-character random string
-function generateEpochId(): string {
-  const epochTime = Math.floor(Date.now()); // Current epoch time in milliseconds
-  const randomString = Math.random().toString(36).substring(2, 6).toUpperCase(); // 4-character random string
-  return `${epochTime}${randomString}`;
-}
-
+import { DataTypes, Model, Optional, Sequelize } from "sequelize";
 export interface QuoteAttributes {
   id: string;
   userId: string;
@@ -44,82 +33,85 @@ export class Quote extends Model<QuoteAttributes, QuoteCreationAttributes> imple
   public readonly updatedAt!: Date;
 }
 
-Quote.init({
-  id: {
-    type: DataTypes.STRING,
-    primaryKey: true,
-    defaultValue: generateEpochId,
-    allowNull: false
-  },
-  userId: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    references: {
-      model: "users",
-      key: "id",
+// Function to initialize the Quote model with a Sequelize instance
+export function initQuoteModel(sequelize: Sequelize): void {
+  Quote.init({
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false
     },
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-    field: "user_id",
-  },
-  systemSizeKw: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    field: "system_size_kw"
-  },
-  monthlyConsumptionKwh: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    field: "monthly_consumption_kwh"
-  },
-  downPayment: {
-    type: DataTypes.DECIMAL(12, 2),
-    allowNull: false,
-    field: "down_payment"
-  },
-  currency: {
-    type: DataTypes.STRING(3),
-    allowNull: false,
-    defaultValue: 'USD'
-  },
-  systemPrice: {
-    type: DataTypes.DECIMAL(12, 2),
-    allowNull: false,
-    field: "system_price"
-  },
-  principalAmount: {
-    type: DataTypes.DECIMAL(12, 2),
-    allowNull: false,
-    field: "principal_amount"
-  },
-  riskBand: {
-    type: DataTypes.ENUM('A', 'B', 'C'),
-    allowNull: false,
-    field: "risk_band"
-  },
-  baseApr: {
-    type: DataTypes.DECIMAL(5, 2),
-    allowNull: false,
-    field: "base_apr"
-  },
-  offers: {
-    type: DataTypes.JSON,
-    allowNull: false
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
-  }
-}, {
-  sequelize,
-  modelName: 'Quote',
-  tableName: 'quotes',
-  timestamps: true,
-  underscored: true
-});
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+      field: "user_id",
+    },
+    systemSizeKw: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      field: "system_size_kw"
+    },
+    monthlyConsumptionKwh: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      field: "monthly_consumption_kwh"
+    },
+    downPayment: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      field: "down_payment"
+    },
+    currency: {
+      type: DataTypes.STRING(3),
+      allowNull: false,
+      defaultValue: 'USD'
+    },
+    systemPrice: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      field: "system_price"
+    },
+    principalAmount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      field: "principal_amount"
+    },
+    riskBand: {
+      type: DataTypes.ENUM('A', 'B', 'C'),
+      allowNull: false,
+      field: "risk_band"
+    },
+    baseApr: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      field: "base_apr"
+    },
+    offers: {
+      type: DataTypes.JSON,
+      allowNull: false
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
+  }, {
+    sequelize,
+    modelName: 'Quote',
+    tableName: 'quotes',
+    timestamps: true,
+    underscored: true
+  });
+}
