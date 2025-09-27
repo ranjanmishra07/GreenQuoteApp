@@ -1,18 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "experimentalDecorators": true,
+    "allowJs": false,
+    "allowUnreachableCode": false,
+    "alwaysStrict": true,
     "module": "CommonJS",
     "moduleResolution": "node",
-    "outDir": "dist",
-    "rootDir": "src",
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "types": ["node"],
-    "sourceMap": true
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "removeComments": false,
+    "sourceMap": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es2019",
+    "baseUrl": "./types",
+    "rootDirs": ["./src"],
+    "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [ "src/**/*", "index.ts"]
 }

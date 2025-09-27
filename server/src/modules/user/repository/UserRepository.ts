@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { User } from '../../../database/models/user.model';
 import { CreateUserRequest } from '../dto/api/user.dto';
 

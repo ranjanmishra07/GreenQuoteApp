@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { QuoteService } from "../services/qouteService";
 import { 
-  CreateQuoteRequest, 
-  QuoteResponse,
-  QuoteWithAuthorResponse
+  CreateQuoteRequest
 } from '../dto/api/quote.dto';
 import { logger } from '../../../logger';
 

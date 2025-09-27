@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig",
+  "compilerOptions": {
+    "target": "es6",
+    "allowJs": false,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es6", "dom"],
+    "baseUrl": "../types",
+    "rootDirs": ["./", "../src"],
+    "outDir": "../test-js"
+  },
+  "include": ["../src/**/*", "./**/*"]
+}

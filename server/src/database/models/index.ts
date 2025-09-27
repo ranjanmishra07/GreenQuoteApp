@@ -3,7 +3,8 @@ import { logger } from "../../logger";
 import { User } from "./user.model";
 import { Quote } from "./quote.model";
 
-const sequelize = getSequelize();
+// Initialize sequelize connection for models
+getSequelize();
 
 // Define associations
 export function initAssociations() {

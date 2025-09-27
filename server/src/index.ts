@@ -1,5 +1,6 @@
-import express, { Express } from 'express';
-import cors from 'cors';
+import * as express from 'express';
+import { Express } from 'express';
+import * as cors from 'cors';
 import { loadConfig } from './config';
 import { logger } from './logger';
 import { createHealthRouter } from './modules/health/router';

@@ -1,5 +1,5 @@
-import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
+import * as winston from 'winston';
+import * as DailyRotateFile from 'winston-daily-rotate-file';
 
 const isProduction = process.env.NODE_ENV === 'production';
 

@@ -64,6 +64,11 @@ export class DatabaseConnection {
     }
   }
 
+  // Test-only: allow injecting a Sequelize instance (e.g., in-memory SQLite)
+  public setSequelizeForTesting(instance: Sequelize): void {
+    this.sequelize = instance;
+  }
+
   public getSequelize(): Sequelize {
     if (!this.sequelize) {
       throw new Error('Database not connected. Call connect() first.');
@@ -89,4 +94,9 @@ export function createDatabaseConnection(): DatabaseConnection {
 export function getSequelize(): Sequelize {
   const db = DatabaseConnection.getInstance();
   return db.getSequelize();
+}
+
+// Test-only helper to inject a Sequelize instance
+export function setSequelizeForTesting(instance: Sequelize): void {
+  DatabaseConnection.getInstance().setSequelizeForTesting(instance);
 }
