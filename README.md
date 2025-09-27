@@ -2,6 +2,8 @@
 
 A comprehensive solar quote management system built with Node.js, TypeScript, React, and PostgreSQL. This application allows users to create, manage, and view solar energy quotes with dynamic pricing and financing options.
 
+Test Screenshot pdf with combined images are shared in this link -> https://drive.google.com/file/d/10n-7vzLP3zbIAS8muECyxXLRyw4vrc3b/view?usp=sharing
+
 ## 🚀 Quick Start with Scripts
 
 The easiest way to run the application is using the provided startup scripts:
