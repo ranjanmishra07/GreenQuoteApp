@@ -6,6 +6,11 @@ A comprehensive solar quote management system built with Node.js, TypeScript, Re
 
 The easiest way to run the application is using the provided startup scripts:
 
+> **Note:** If you get a "Permission denied" error when running the scripts, you may need to make them executable first:
+> ```bash
+> chmod +x ./start-app.sh ./test-app.sh ./stop-app.sh
+> ```
+
 ### 1. Start the Application
 ```bash
 ./start-app.sh
@@ -103,7 +108,7 @@ This will run all Mocha tests with the following features:
 If you prefer to run components manually:
 
 ### Prerequisites
-- Node.js (>=20.0.0)
+- Node.js (>=20.0.0) - Use `nvm` to manage Node.js versions
 - Docker and Docker Compose
 - PostgreSQL (or use Docker)
 
@@ -119,6 +124,9 @@ createdb greenquote
 ### 2. Server Setup
 ```bash
 cd server
+
+# Use the correct Node.js version
+nvm use
 
 # Install dependencies
 npm install
@@ -137,6 +145,9 @@ npm run dev
 ### 3. Client Setup
 ```bash
 cd client
+
+# Use the correct Node.js version
+nvm use
 
 # Install dependencies
 npm install
@@ -231,6 +242,7 @@ docker-compose down
 ### Server Tests
 ```bash
 cd server
+nvm use                     # Use correct Node.js version
 npm test                    # Run all tests
 npm test -- --grep "Quote" # Run specific tests
 ```
@@ -250,6 +262,7 @@ npm test -- --grep "Quote" # Run specific tests
 ### Server Scripts
 ```bash
 cd server
+nvm use              # Use correct Node.js version
 npm run dev          # Development server with hot reload
 npm run build        # Build TypeScript
 npm start           # Production server
@@ -261,6 +274,7 @@ npm run migrate:down # Rollback migrations
 ### Client Scripts
 ```bash
 cd client
+nvm use             # Use correct Node.js version
 npm run dev         # Development server
 npm run build       # Production build
 npm run preview     # Preview production build
